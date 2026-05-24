@@ -6,7 +6,7 @@ SPACE tokens that are later added to the output list.
 
 import pytest
 
-from tinyfsm.api import Traversal, StateMachine, EventRejectedError
+from tinyfsm.api import Traversal, StateMachineRunner, EventRejectedError
 
 
 definition = [
@@ -42,11 +42,11 @@ class Listener:
 def tokenize(text: str) -> list[tuple[str, str]]:
     out = []
     listener = Listener(out)
-    sm = StateMachine(definition, listener)
-    with sm:
+    runner = StateMachineRunner(definition, listener)
+    with runner:
         for char in text:
-            sm.dispatch(char)
-        sm.dispatch("")
+            runner.dispatch(char)
+        runner.dispatch("")
     return out
 
 

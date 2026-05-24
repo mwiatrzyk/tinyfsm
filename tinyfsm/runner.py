@@ -10,8 +10,8 @@ T = TypeVar("T")
 
 
 @export
-class StateMachine(Generic[T]):
-    """State machine engine.
+class StateMachineRunner(Generic[T]):
+    """State machine runner.
 
     Each instance of this class can only parse single chain of events (as it
     keeps the state between :meth:`dispatch` calls) and therefore a brand new
@@ -81,7 +81,7 @@ class StateMachine(Generic[T]):
         self.__current_state = self.__initial_state
         self.__last_event: Optional[T] = None
 
-    def __enter__(self) -> "StateMachine":
+    def __enter__(self) -> "StateMachineRunner":
         return self
 
     def __exit__(self, exc_type, exc, tb):
