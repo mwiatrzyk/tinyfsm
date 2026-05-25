@@ -8,26 +8,31 @@ from tinyfsm.runner import StateMachineRunner
 
 
 class TestStateMachineRunner:
-
     @pytest.fixture
     def listener_mock(self):
         mock = Mock("listener_mock")
         with satisfied(mock):
             yield mock
 
-    @pytest.mark.parametrize("definition, initial_state_name", [
-        ([], "dummy"),
-        ([Traversal[str]("initial", "next", lambda e: True)], "dummy"),
-    ])
+    @pytest.mark.parametrize(
+        "definition, initial_state_name",
+        [
+            ([], "dummy"),
+            ([Traversal[str]("initial", "next", lambda e: True)], "dummy"),
+        ],
+    )
     def test_creating_without_initial_state_causes_error(self, definition, listener_mock, initial_state_name):
         with pytest.raises(TypeError) as excinfo:
             StateMachineRunner(definition, listener_mock, initial_state=initial_state_name)
         assert str(excinfo.value) == f"no initial state found: {initial_state_name}"
 
-    @pytest.mark.parametrize("definition, final_state_name", [
-        ([Traversal[str]("initial", "next", lambda e: True)], "dummy"),
-        ([Traversal[str]("initial", "final", lambda e: True)], "dummy"),
-    ])
+    @pytest.mark.parametrize(
+        "definition, final_state_name",
+        [
+            ([Traversal[str]("initial", "next", lambda e: True)], "dummy"),
+            ([Traversal[str]("initial", "final", lambda e: True)], "dummy"),
+        ],
+    )
     def test_creating_without_final_state_causes_error(self, definition, listener_mock, final_state_name):
         with pytest.raises(TypeError) as excinfo:
             StateMachineRunner(definition, listener_mock, final_state=final_state_name)
@@ -45,7 +50,10 @@ class TestStateMachineRunner:
         uut.dispatch("dummy")
         with pytest.raises(FinalStateNotReached) as excinfo:
             uut.close()
-        assert str(excinfo.value) == "final state 'final' was not reached; current state is 'dummy', last event was 'dummy'"
+        assert (
+            str(excinfo.value)
+            == "final state 'final' was not reached; current state is 'dummy', last event was 'dummy'"
+        )
 
     def test_dispatch_fails_if_no_traversal_is_defined(self, listener_mock):
         definition = [

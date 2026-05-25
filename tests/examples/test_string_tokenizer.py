@@ -22,7 +22,6 @@ definition = [
 
 
 class Listener:
-
     def __init__(self, output: list[tuple[str, str]]):
         self._output = output
         self._buffer = ""
@@ -50,14 +49,17 @@ def tokenize(text: str) -> list[tuple[str, str]]:
     return out
 
 
-@pytest.mark.parametrize("input, expected_output", [
-    ("foo", [("WORD", "foo")]),
-    ("foobar", [("WORD", "foobar")]),
-    ("foo bar", [("WORD", "foo"), ("SPACE", " "), ("WORD", "bar")]),
-    ("foo  bar", [("WORD", "foo"), ("SPACE", "  "), ("WORD", "bar")]),
-    ("foo bar ", [("WORD", "foo"), ("SPACE", " "), ("WORD", "bar"), ("SPACE", " ")]),
-    (" foo bar ", [("SPACE", " "), ("WORD", "foo"), ("SPACE", " "), ("WORD", "bar"), ("SPACE", " ")]),
-])
+@pytest.mark.parametrize(
+    "input, expected_output",
+    [
+        ("foo", [("WORD", "foo")]),
+        ("foobar", [("WORD", "foobar")]),
+        ("foo bar", [("WORD", "foo"), ("SPACE", " "), ("WORD", "bar")]),
+        ("foo  bar", [("WORD", "foo"), ("SPACE", "  "), ("WORD", "bar")]),
+        ("foo bar ", [("WORD", "foo"), ("SPACE", " "), ("WORD", "bar"), ("SPACE", " ")]),
+        (" foo bar ", [("SPACE", " "), ("WORD", "foo"), ("SPACE", " "), ("WORD", "bar"), ("SPACE", " ")]),
+    ],
+)
 def test_tokenize_successfully(input, expected_output):
     assert tokenize(input) == expected_output
 
