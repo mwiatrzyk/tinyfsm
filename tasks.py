@@ -56,3 +56,9 @@ def serve_coverage(ctx: Context, port: int = 8080):
 def build(ctx: Context):
     """Build Python package."""
     ctx.run("poetry build")
+
+
+@task
+def publish(ctx: Context):
+    """Publish Python package to PyPI."""
+    ctx.run("poetry publish")
