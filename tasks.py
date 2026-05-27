@@ -53,7 +53,7 @@ def build(ctx: Context):
 
 
 @task
-def build_deploy_key(ctx: Context, comment: str="CircleCI"):
+def build_deploy_key(ctx: Context, comment: str = "CircleCI"):
     """Build a deploy key to use in CI/CD pipeline."""
     ctx.run("rm -rf ssh")
     ctx.run("mkdir -p ssh")
