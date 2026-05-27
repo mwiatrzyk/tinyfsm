@@ -2,7 +2,7 @@ import pytest
 
 from mockify.api import Mock, satisfied
 
-from tinyfsm.exc import EventRejectedError, FinalStateNotReached
+from tinyfsm.exc import InputRejectedError, FinalStateNotReached
 from tinyfsm.interface import Traversal
 from tinyfsm.runner import StateMachineRunner
 
@@ -40,9 +40,9 @@ class TestStateMachineRunner:
 
     def test_closing_before_reaching_final_state_causes_error(self, listener_mock):
         definition = [
-            Traversal[str]("initial", "dummy", lambda event: event == "dummy"),
-            Traversal[str]("dummy", "spam", lambda event: event == "spam"),
-            Traversal[str]("spam", "final", lambda event: event == ""),
+            Traversal[str]("initial", "dummy", lambda input: input == "dummy"),
+            Traversal[str]("dummy", "spam", lambda input: input == "spam"),
+            Traversal[str]("spam", "final", lambda input: input == ""),
         ]
         uut = StateMachineRunner(definition, listener_mock)
         listener_mock.on_state_change.expect_call("dummy", "initial", "dummy")
@@ -52,18 +52,18 @@ class TestStateMachineRunner:
             uut.close()
         assert (
             str(excinfo.value)
-            == "final state 'final' was not reached; current state is 'dummy', last event was 'dummy'"
+            == "final state 'final' was not reached; current state is 'dummy', last input was 'dummy'"
         )
 
     def test_dispatch_fails_if_no_traversal_is_defined(self, listener_mock):
         definition = [
-            Traversal[str]("initial", "dummy", lambda event: event == "dummy"),
-            Traversal[str]("spam", "final", lambda event: event == ""),
+            Traversal[str]("initial", "dummy", lambda input: input == "dummy"),
+            Traversal[str]("spam", "final", lambda input: input == ""),
         ]
         uut = StateMachineRunner(definition, listener_mock)
         listener_mock.on_state_change.expect_call("dummy", "initial", "dummy")
         listener_mock.on_dispatch_done.expect_call("dummy", "dummy")
         uut.dispatch("dummy")
-        with pytest.raises(EventRejectedError) as excinfo:
+        with pytest.raises(InputRejectedError) as excinfo:
             uut.dispatch("spam")
-        assert str(excinfo.value) == "event 'spam' was rejected; no traversal found for current state 'dummy'"
+        assert str(excinfo.value) == "input 'spam' was rejected; no traversal found for current state 'dummy'"

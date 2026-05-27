@@ -1,7 +1,7 @@
 from typing import Generic, Optional, Sequence, TypeVar
 
 from . import _export_list
-from .exc import EventRejectedError, FinalStateNotReached
+from .exc import InputRejectedError, FinalStateNotReached
 from .interface import StateMachineListener, Traversal
 
 __all__ = export = _export_list.ExportList()  # type: ignore
@@ -66,11 +66,11 @@ class StateMachineRunner(Generic[T]):
         self.__traversal_map: dict[str, list[Traversal]] = {}
         has_initial = has_final = False
         for traversal in definition:
-            if traversal.src == initial_state:
+            if traversal.source_state == initial_state:
                 has_initial = True
-            if traversal.dest == final_state:
+            if traversal.target_state == final_state:
                 has_final = True
-            self.__traversal_map.setdefault(traversal.src, []).append(traversal)
+            self.__traversal_map.setdefault(traversal.source_state, []).append(traversal)
         if not has_initial:
             raise TypeError(f"no initial state found: {initial_state}")
         if not has_final:
@@ -79,7 +79,7 @@ class StateMachineRunner(Generic[T]):
         self.__initial_state = initial_state
         self.__final_state = final_state
         self.__current_state = self.__initial_state
-        self.__last_event: Optional[T] = None
+        self.__last_input: Optional[T] = None
 
     def __enter__(self) -> "StateMachineRunner":
         return self
@@ -89,42 +89,41 @@ class StateMachineRunner(Generic[T]):
             return None
         return self.close()
 
-    def dispatch(self, event: T):
-        """Dispatch event to the state machine.
+    def dispatch(self, input: T):
+        """Dispatch input to the state machine.
 
-        This should be called for each event, and state machine can either
-        accept the event, and maybe traverse to a different state in response
-        for that event, or reject it by raising :exc:`EventRejectedError`
-        exception.
+        This should be called for each input, and state machine can either
+        accept the input, and maybe traverse to a different state, or reject it
+        by raising :exc:`InputRejectedError` exception.
 
-        :param event:
-            The event object to dispatch.
+        :param input:
+            The current input to dispatch.
         """
-        self.__last_event = event
+        self.__last_input = input
         current_state_traversals = self.__traversal_map.get(self.__current_state)
         if current_state_traversals is None:
-            raise EventRejectedError(event, self.__current_state)
+            raise InputRejectedError(input, self.__current_state)
         print(current_state_traversals)
         for traversal in current_state_traversals:
-            if traversal.cond(event):
-                next_state = traversal.dest
-                self.__listener.on_state_change(event, self.__current_state, next_state)
+            if traversal.traverse_func(input):
+                next_state = traversal.target_state
+                self.__listener.on_state_change(input, self.__current_state, next_state)
                 self.__current_state = next_state
                 break
         else:
-            raise EventRejectedError(event, self.__current_state)
-        self.__listener.on_dispatch_done(event, self.__current_state)
+            raise InputRejectedError(input, self.__current_state)
+        self.__listener.on_dispatch_done(input, self.__current_state)
 
     def close(self):
         """Close this state machine.
 
-        This method should be called after event dispatching ends. Its role is
-        to check if the final state was reached; if the final state was
-        reached, the method silently returns. Otherwise it raises
+        This method should be called shortly after all inputs are dispatched.
+        Its role is to ensure that the final state was reached; if the final
+        state was reached, the method silently returns. Otherwise it raises
         :exc:`tinyfsm.exc.FinalStateNotReached` error.
         """
         if not self.is_final():
-            raise FinalStateNotReached(self.__last_event, self.__final_state, self.__current_state)
+            raise FinalStateNotReached(self.__last_input, self.__final_state, self.__current_state)
 
     def is_final(self) -> bool:
         """Check if the final state is reached."""
