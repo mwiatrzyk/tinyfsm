@@ -53,7 +53,7 @@ def build(ctx: Context):
 
 
 @task
-def bump(ctx: Context, dry_run: bool=False):
+def bump(ctx: Context, dry_run: bool = False):
     """Create next version."""
     ctx.run(f"bumpify {'--dry-run' if dry_run else ''} bump")
 
