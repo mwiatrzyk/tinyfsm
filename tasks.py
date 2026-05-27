@@ -53,6 +53,14 @@ def build(ctx: Context):
 
 
 @task
+def build_deploy_key(ctx: Context, comment: str="CircleCI"):
+    """Build a deploy key to use in CI/CD pipeline."""
+    ctx.run("rm -rf ssh")
+    ctx.run("mkdir -p ssh")
+    ctx.run(f"ssh-keygen -t ed25519 -C {comment} -f ssh/ed25519")
+
+
+@task
 def bump(ctx: Context, dry_run: bool = False):
     """Create next version."""
     ctx.run(f"bumpify {'--dry-run' if dry_run else ''} bump")
