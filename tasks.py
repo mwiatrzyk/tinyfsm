@@ -69,4 +69,4 @@ def bump(ctx: Context, dry_run: bool = False):
 @task
 def publish(ctx: Context):
     """Publish Python package to PyPI."""
-    ctx.run("poetry publish")
+    ctx.run("poetry publish --username __token__ --password $PYPI_API_TOKEN")
