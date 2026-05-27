@@ -10,14 +10,15 @@ from tinyfsm.api import Traversal, StateMachineRunner, InputRejectedError
 
 
 definition = [
-    Traversal[str]("initial", "word", lambda input: input.isalpha()),
-    Traversal[str]("initial", "space", lambda input: input == " "),
-    Traversal[str]("word", "word", lambda input: input.isalpha()),
-    Traversal[str]("word", "space", lambda input: input == " "),
+    Traversal[str]("initial", "word", str.isalpha),
+    Traversal[str]("initial", "number", str.isdigit),
+    Traversal[str]("initial", "final", lambda input: input == ""),
+    Traversal[str]("word", "word", str.isalpha),
+    Traversal[str]("word", "number", str.isdigit),
     Traversal[str]("word", "final", lambda input: input == ""),
-    Traversal[str]("space", "space", lambda input: input == " "),
-    Traversal[str]("space", "word", lambda input: input.isalpha()),
-    Traversal[str]("space", "final", lambda input: input == ""),
+    Traversal[str]("number", "number", str.isdigit),
+    Traversal[str]("number", "word", str.isalpha),
+    Traversal[str]("number", "final", lambda input: input == ""),
 ]
 
 
@@ -30,8 +31,8 @@ class Listener:
         if prev_state != current_state:
             if prev_state == "word":
                 self._output.append(("WORD", self._buffer))
-            if prev_state == "space":
-                self._output.append(("SPACE", self._buffer))
+            if prev_state == "number":
+                self._output.append(("NUMBER", self._buffer))
             self._buffer = ""
 
     def on_dispatch_done(self, input: str, current_state: str):
@@ -52,12 +53,16 @@ def tokenize(text: str) -> list[tuple[str, str]]:
 @pytest.mark.parametrize(
     "input, expected_output",
     [
+        ("", []),
+        ("f", [("WORD", "f")]),
         ("foo", [("WORD", "foo")]),
-        ("foobar", [("WORD", "foobar")]),
-        ("foo bar", [("WORD", "foo"), ("SPACE", " "), ("WORD", "bar")]),
-        ("foo  bar", [("WORD", "foo"), ("SPACE", "  "), ("WORD", "bar")]),
-        ("foo bar ", [("WORD", "foo"), ("SPACE", " "), ("WORD", "bar"), ("SPACE", " ")]),
-        (" foo bar ", [("SPACE", " "), ("WORD", "foo"), ("SPACE", " "), ("WORD", "bar"), ("SPACE", " ")]),
+        ("1", [("NUMBER", "1")]),
+        ("123", [("NUMBER", "123")]),
+        ("foo123", [("WORD", "foo"), ("NUMBER", "123")]),
+        (
+            "f1o2o345",
+            [("WORD", "f"), ("NUMBER", "1"), ("WORD", "o"), ("NUMBER", "2"), ("WORD", "o"), ("NUMBER", "345")],
+        ),
     ],
 )
 def test_tokenize_successfully(input, expected_output):
@@ -66,5 +71,5 @@ def test_tokenize_successfully(input, expected_output):
 
 def test_tokenization_fails_for_invalid_input():
     with pytest.raises(InputRejectedError) as excinfo:
-        tokenize("123")
-    assert str(excinfo.value) == "input '1' was rejected; no traversal found for current state 'initial'"
+        tokenize("foo123 ")
+    assert str(excinfo.value) == "input ' ' was rejected; no traversal found for current state 'number'"

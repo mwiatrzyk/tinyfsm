@@ -4,22 +4,16 @@ from invoke.context import Context
 LINE_LENGTH = 120
 
 
-@task
-def check_format(ctx: Context):
+@task(help={"fix": "Fix code formatting."})
+def check_format(ctx: Context, fix: bool = False):
     """Check if code is formatted."""
-    ctx.run(f"ruff format --line-length={LINE_LENGTH} --check")
+    ctx.run(f"ruff format --line-length={LINE_LENGTH} {'--check' if not fix else ''}")
 
 
-@task
-def fix_format(ctx: Context):
-    """Run code formatter."""
-    ctx.run(f"ruff format --line-length={LINE_LENGTH}")
-
-
-@task
-def check_lint(ctx: Context):
+@task(help={"fix": "Fix fixable linter errors."})
+def check_lint(ctx: Context, fix: bool = False):
     """Check code against linting errors."""
-    ctx.run("ruff check --exclude api.py")
+    ctx.run(f"ruff check --exclude api.py {'--fix' if fix else ''}")
 
 
 @task

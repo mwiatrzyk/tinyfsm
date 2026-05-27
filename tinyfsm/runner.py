@@ -103,7 +103,6 @@ class StateMachineRunner(Generic[T]):
         current_state_traversals = self.__traversal_map.get(self.__current_state)
         if current_state_traversals is None:
             raise InputRejectedError(input, self.__current_state)
-        print(current_state_traversals)
         for traversal in current_state_traversals:
             if traversal.traverse_func(input):
                 next_state = traversal.target_state
