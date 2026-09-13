@@ -125,7 +125,9 @@ class StateMachineRunner(Generic[T]):
         if not self.is_final():
             current_state_traversals = self.__traversal_map.get(self.__current_state)
             next_state_candidates = tuple(x.target_state for x in (current_state_traversals or []))
-            raise FinalStateNotReached(self.__last_input, self.__final_state, self.__current_state, next_state_candidates)
+            raise FinalStateNotReached(
+                self.__last_input, self.__final_state, self.__current_state, next_state_candidates
+            )
 
     def is_final(self) -> bool:
         """Check if the final state is reached."""

@@ -72,4 +72,7 @@ def test_tokenize_successfully(input, expected_output):
 def test_tokenization_fails_for_invalid_input():
     with pytest.raises(InputRejectedError) as excinfo:
         tokenize("foo123 ")
-    assert str(excinfo.value) == "input ' ' was rejected; cannot traverse from 'number' to any of: 'number', 'word', 'final'"
+    assert (
+        str(excinfo.value)
+        == "input ' ' was rejected; cannot traverse from 'number' to any of: 'number', 'word', 'final'"
+    )
