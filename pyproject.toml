@@ -1,6 +1,6 @@
 [project]
 name = "tinyfsm"
-version = "0.0.2"
+version = "0.1.0"
 description = "A tiny and minimal finite state machine for Python."
 authors = [
     {name = "Maciej Wiatrzyk",email = "maciej.wiatrzyk@gmail.com"}
