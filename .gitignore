@@ -4,3 +4,7 @@ dist
 .coverage
 reports
 ssh
+.venv
+.ruff_cache
+.pytest_cache
+.python-version

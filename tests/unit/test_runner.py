@@ -1,8 +1,7 @@
 import pytest
-
 from mockify.api import Mock, satisfied
 
-from tinyfsm.exc import InconsistentDefinitionError, FinalStateNotReached
+from tinyfsm.exc import FinalStateNotReached, InconsistentDefinitionError
 from tinyfsm.interface import Traversal
 from tinyfsm.runner import StateMachineRunner
 

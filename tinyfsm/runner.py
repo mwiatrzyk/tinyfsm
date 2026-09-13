@@ -1,10 +1,13 @@
-from typing import Generic, Optional, Sequence, TypeVar
+from __future__ import annotations
+
+from collections.abc import Sequence
+from typing import Generic, TypeVar
 
 from . import _export_list
-from .exc import InconsistentDefinitionError, InputRejectedError, FinalStateNotReached
+from .exc import FinalStateNotReached, InconsistentDefinitionError, InputRejectedError
 from .interface import StateMachineListener, Traversal
 
-__all__ = export = _export_list.ExportList()  # type: ignore
+__all__ = export = _export_list.ExportList()  # type: ignore # noqa: PLE0605
 
 T = TypeVar("T")
 
@@ -79,9 +82,9 @@ class StateMachineRunner(Generic[T]):
         self.__initial_state = initial_state
         self.__final_state = final_state
         self.__current_state = self.__initial_state
-        self.__last_input: Optional[T] = None
+        self.__last_input: T | None = None
 
-    def __enter__(self) -> "StateMachineRunner":
+    def __enter__(self) -> StateMachineRunner[T]:
         return self
 
     def __exit__(self, exc_type, exc, tb):

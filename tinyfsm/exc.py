@@ -1,8 +1,9 @@
-from typing import Any, Sequence
+from collections.abc import Sequence
+from typing import Any
 
 from . import _export_list
 
-__all__ = export = _export_list.ExportList()  # type: ignore
+__all__ = export = _export_list.ExportList()  # type: ignore # noqa: PLE0605
 
 
 @export

@@ -6,8 +6,7 @@ SPACE tokens that are later added to the output list.
 
 import pytest
 
-from tinyfsm.api import Traversal, StateMachineRunner, InputRejectedError
-
+from tinyfsm.api import InputRejectedError, StateMachineRunner, Traversal
 
 definition = [
     Traversal[str]("initial", "word", str.isalpha),

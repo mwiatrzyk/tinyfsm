@@ -1,5 +1,5 @@
-from invoke.tasks import task
 from invoke.context import Context
+from invoke.tasks import task
 
 LINE_LENGTH = 120
 
@@ -28,9 +28,13 @@ def check_coverage(ctx: Context):
     ctx.run("pytest --cov=tinyfsm --cov-branch --cov-fail-under=100")
 
 
-@task(check_format, check_lint, check_tests, check_coverage)
-def check(ctx: Context):
+@task(help={"fix": "Apply fixes automatically where applicable"})
+def check(ctx: Context, fix: bool = False):
     """Run all checks."""
+    ctx.run(f"inv check-format {'--fix' if fix else ''}")
+    ctx.run(f"inv check-lint {'--fix' if fix else ''}")
+    ctx.run("inv check-tests")
+    ctx.run("inv check-coverage")
 
 
 @task(help={"format": "Coverage report format. [default: term]"})
@@ -49,7 +53,7 @@ def serve_coverage(ctx: Context, port: int = 8080):
 @task
 def build(ctx: Context):
     """Build Python package."""
-    ctx.run("poetry build")
+    ctx.run("uv build")
 
 
 @task
@@ -63,10 +67,16 @@ def build_deploy_key(ctx: Context, comment: str = "CircleCI"):
 @task
 def bump(ctx: Context, dry_run: bool = False):
     """Create next version."""
-    ctx.run(f"bumpify {'--dry-run' if dry_run else ''} bump")
+    ctx.run(f"uvx --python=3.9 bumpify {'--dry-run' if dry_run else ''} bump")
 
 
 @task
 def publish(ctx: Context):
     """Publish Python package to PyPI."""
-    ctx.run("poetry publish --username __token__ --password $PYPI_API_TOKEN")
+    ctx.run("uv publish --token $PYPI_API_TOKEN")
+
+
+@task
+def clean(ctx: Context):
+    """Remove all build artifacts and restore workspace to a fresh checkout state."""
+    ctx.run("git clean -xdf")
