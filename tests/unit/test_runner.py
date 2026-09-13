@@ -2,7 +2,7 @@ import pytest
 
 from mockify.api import Mock, satisfied
 
-from tinyfsm.exc import InputRejectedError, FinalStateNotReached
+from tinyfsm.exc import InconsistentDefinitionError, InputRejectedError, FinalStateNotReached
 from tinyfsm.interface import Traversal
 from tinyfsm.runner import StateMachineRunner
 
@@ -52,7 +52,7 @@ class TestStateMachineRunner:
             uut.close()
         assert (
             str(excinfo.value)
-            == "final state 'final' was not reached; current state is 'dummy', last input was 'dummy'"
+            == "final state 'final' was not reached for last input 'dummy'; more input data is expected to traverse from 'dummy' to any of: 'spam'"
         )
 
     def test_dispatch_fails_if_no_traversal_is_defined(self, listener_mock):
@@ -64,6 +64,6 @@ class TestStateMachineRunner:
         listener_mock.on_state_change.expect_call("dummy", "initial", "dummy")
         listener_mock.on_dispatch_done.expect_call("dummy", "dummy")
         uut.dispatch("dummy")
-        with pytest.raises(InputRejectedError) as excinfo:
+        with pytest.raises(InconsistentDefinitionError) as excinfo:
             uut.dispatch("spam")
-        assert str(excinfo.value) == "input 'spam' was rejected; no traversal found for current state 'dummy'"
+        assert str(excinfo.value) == "input 'spam' was rejected; no next state defined for the current state 'dummy'"

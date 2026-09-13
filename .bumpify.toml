@@ -8,8 +8,8 @@ version_tag_name_template = "v{version_str}"
 
 [[semver.bump_rules]]
 branch = "main"
-when_breaking = "patch"
-when_feat = "patch"
+when_breaking = "minor"
+when_feat = "minor"
 when_fix = "patch"
 
 [[semver.version_files]]

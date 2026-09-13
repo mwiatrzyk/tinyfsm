@@ -1,7 +1,7 @@
 from typing import Generic, Optional, Sequence, TypeVar
 
 from . import _export_list
-from .exc import InputRejectedError, FinalStateNotReached
+from .exc import InconsistentDefinitionError, InputRejectedError, FinalStateNotReached
 from .interface import StateMachineListener, Traversal
 
 __all__ = export = _export_list.ExportList()  # type: ignore
@@ -102,7 +102,7 @@ class StateMachineRunner(Generic[T]):
         self.__last_input = input
         current_state_traversals = self.__traversal_map.get(self.__current_state)
         if current_state_traversals is None:
-            raise InputRejectedError(input, self.__current_state)
+            raise InconsistentDefinitionError(input, self.__current_state)
         for traversal in current_state_traversals:
             if traversal.traverse_func(input):
                 next_state = traversal.target_state
@@ -110,7 +110,8 @@ class StateMachineRunner(Generic[T]):
                 self.__current_state = next_state
                 break
         else:
-            raise InputRejectedError(input, self.__current_state)
+            next_state_candidates = tuple(x.target_state for x in current_state_traversals)
+            raise InputRejectedError(input, self.__current_state, next_state_candidates)
         self.__listener.on_dispatch_done(input, self.__current_state)
 
     def close(self):
@@ -122,7 +123,9 @@ class StateMachineRunner(Generic[T]):
         :exc:`tinyfsm.exc.FinalStateNotReached` error.
         """
         if not self.is_final():
-            raise FinalStateNotReached(self.__last_input, self.__final_state, self.__current_state)
+            current_state_traversals = self.__traversal_map.get(self.__current_state)
+            next_state_candidates = tuple(x.target_state for x in (current_state_traversals or []))
+            raise FinalStateNotReached(self.__last_input, self.__final_state, self.__current_state, next_state_candidates)
 
     def is_final(self) -> bool:
         """Check if the final state is reached."""
